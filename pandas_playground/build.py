@@ -45,6 +45,7 @@ def build_html(out_dir, pyodide_dir):
         'runtime': open('runtime.py').read(),
         'datasets': datasets(),
         'files': FILES,
+        'wheels': sorted(f for f in os.listdir(pyodide_dir) if f.endswith('.whl')) if pyodide_dir else [],
     }
     blob = json.dumps(data).replace('</', '<\\/')
     html = open('template.html').read().replace('__DATA__', blob).replace('__COUNT__', str(len(EXERCISES)))
@@ -55,9 +56,13 @@ def build_html(out_dir, pyodide_dir):
     for f in FILES:
         shutil.copy(os.path.join('data', f), os.path.join(out_dir, 'data', f))
     if pyodide_dir:
+        import base64
         for f in os.listdir(pyodide_dir):
-            if f.endswith(('.js', '.wasm', '.zip', '.whl', 'pyodide-lock.json')) and not f.endswith('.map'):
-                shutil.copy(os.path.join(pyodide_dir, f), os.path.join(out_dir, 'py', f))
+            src = os.path.join(pyodide_dir, f)
+            if f.endswith(('.js', '.wasm', 'pyodide-lock.json')):
+                shutil.copy(src, os.path.join(out_dir, 'py', f))
+            elif f.endswith(('.zip', '.whl')):  # host serves web types only, so ship as base64 text
+                open(os.path.join(out_dir, 'py', f + '.txt'), 'w').write(base64.b64encode(open(src, 'rb').read()).decode())
 
 
 def build_notebook(path):

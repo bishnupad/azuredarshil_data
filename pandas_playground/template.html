@@ -220,7 +220,7 @@ const DATA = __DATA__;
       else if (m.type === 'result') { const p = pending.get(m.id); if (p) { pending.delete(m.id); clearTimeout(p.t); p.resolve(m.data); } }
     };
     worker.onerror = (e) => { setEngine('fail', 'Python failed to load'); showFatal(e.message || 'The Python worker stopped.'); };
-    worker.postMessage({ type: 'init', files: DATA.files, setup: DATA.setup, checker: DATA.checker, runtime: DATA.runtime });
+    worker.postMessage({ type: 'init', files: DATA.files, wheels: DATA.wheels, setup: DATA.setup, checker: DATA.checker, runtime: DATA.runtime });
   }
   function run(code, ex, mode) {
     return new Promise((resolve) => {

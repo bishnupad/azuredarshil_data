@@ -1,0 +1,9 @@
+name,age,city,salary,joined
+  alice SMITH,34,Tokyo,"$52,000",2021-03-15
+Bob jones ,29,osaka,"$48,500",2020-11-01
+CHARLIE brown,n/a,Kyoto ,"$61,000",2019-07-23
+alice SMITH,34,Tokyo,"$52,000",2021-03-15
+dana White,41,TOKYO,,2022-01-10
+,25,Osaka,"$39,000",2023-05-30
+Eve  Adams,,kyoto,"$70,250",2018-09-12
+frank Moore,38,Osaka,"$45,000",not sure

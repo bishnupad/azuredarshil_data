@@ -1,0 +1,468 @@
+<meta charset="utf-8">
+<title>Pandas Dojo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a training dojo. Belt-coloured levels on the left (or a chip rail on phones), one exercise bench on the right. */
+:root {
+  --bg: #f3f5f1;
+  --panel: #ffffff;
+  --ink: #18221c;
+  --muted: #5b6b61;
+  --line: #d9e0da;
+  --bamboo: #2f7a4b;
+  --bamboo-soft: #e2efe6;
+  --ink-code: #0f1a14;
+  --code-bg: #f7f9f6;
+  --ok: #1f7a3f;
+  --ok-bg: #dff3e5;
+  --bad: #b3261e;
+  --bad-bg: #fbe6e3;
+  --warn-bg: #fff4d6;
+  --warn: #7a5600;
+  --focus: #2f7a4b;
+  --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101612; --panel: #172019; --ink: #e5ece6; --muted: #98a89d; --line: #2a362d;
+    --bamboo: #6cc48d; --bamboo-soft: #1f3326; --ink-code: #dfe9e1; --code-bg: #121a15;
+    --ok: #7ddc9b; --ok-bg: #173323; --bad: #ff8a80; --bad-bg: #3a1a18; --warn-bg: #352a10; --warn: #f2cf73; --focus: #6cc48d;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101612; --panel: #172019; --ink: #e5ece6; --muted: #98a89d; --line: #2a362d;
+  --bamboo: #6cc48d; --bamboo-soft: #1f3326; --ink-code: #dfe9e1; --code-bg: #121a15;
+  --ok: #7ddc9b; --ok-bg: #173323; --bad: #ff8a80; --bad-bg: #3a1a18; --warn-bg: #352a10; --warn: #f2cf73; --focus: #6cc48d;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5; }
+button, textarea, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+code, .mono { font-family: var(--mono); font-size: 0.88em; }
+
+.wrap { max-width: 1240px; margin: 0 auto; padding-block: 20px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+header.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; margin-bottom: 18px; }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(28px, 6vw, 40px); line-height: 1.05; margin: 0; letter-spacing: -0.02em; text-wrap: balance; }
+h1 span { color: var(--bamboo); }
+.sub { margin: 6px 0 0; color: var(--muted); max-width: 60ch; }
+.stats { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); font-size: 13px; color: var(--muted); white-space: nowrap; }
+.pill b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--warn); }
+.dot.ready { background: var(--ok); }
+.dot.fail { background: var(--bad); }
+.bar { height: 6px; width: 120px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--bamboo); width: 0; transition: width .3s; }
+
+.grid { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 20px; align-items: start; }
+nav.levels { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); display: flex; flex-direction: column; gap: 4px; max-height: calc(100vh - 40px); overflow: auto; padding-right: 4px; }
+.lv { display: grid; grid-template-columns: 26px 1fr auto; gap: 10px; align-items: center; width: 100%; text-align: left; padding: 9px 10px; border-radius: 8px; border: 1px solid transparent; background: none; cursor: pointer; }
+.lv:hover { background: var(--panel); }
+.lv[aria-current="true"] { background: var(--panel); border-color: var(--line); }
+.lv .n { font-family: var(--display); font-weight: 700; font-size: 15px; color: var(--muted); text-align: center; }
+.lv[aria-current="true"] .n { color: var(--bamboo); }
+.lv .t { font-weight: 600; font-size: 14px; line-height: 1.25; }
+.lv .t small { display: block; font-weight: 400; font-size: 12px; color: var(--muted); }
+.lv .c { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.lv.done .c { color: var(--ok); font-weight: 600; }
+.navsep { height: 1px; background: var(--line); margin: 8px 4px; }
+.mode { font-size: 14px; padding: 8px 10px; border-radius: 8px; border: 1px solid transparent; background: none; text-align: left; cursor: pointer; color: var(--muted); }
+.mode:hover, .mode[aria-current="true"] { background: var(--panel); color: var(--ink); border-color: var(--line); }
+
+main { min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; min-width: 0; }
+.lvhead h2 { font-family: var(--display); font-size: 24px; margin: 0; line-height: 1.15; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--bamboo); font-weight: 600; margin-bottom: 4px; }
+.lvhead p { margin: 8px 0 0; max-width: 68ch; color: var(--muted); }
+details.cheat { margin-top: 12px; }
+details.cheat summary { cursor: pointer; font-weight: 600; font-size: 14px; color: var(--bamboo); }
+.cheats { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 6px; margin-top: 10px; }
+.cheats code { display: block; background: var(--code-bg); border: 1px solid var(--line); padding: 6px 8px; border-radius: 6px; overflow-x: auto; white-space: nowrap; color: var(--ink-code); }
+
+.exlist { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 14px; }
+.exbtn { min-width: 38px; height: 34px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); cursor: pointer; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 14px; }
+.exbtn.solved { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+.exbtn[aria-current="true"] { outline: 2px solid var(--bamboo); outline-offset: 1px; }
+
+.task h3 { font-family: var(--display); font-size: 20px; margin: 0 0 6px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.task h3 .num { color: var(--muted); font-size: 15px; font-weight: 500; }
+.task h3 .badge { font-family: var(--body); font-size: 12px; font-weight: 600; color: var(--ok); background: var(--ok-bg); padding: 2px 8px; border-radius: 999px; }
+.task p { margin: 0; max-width: 70ch; }
+.task .note { font-size: 13px; color: var(--muted); margin-top: 6px; }
+
+.editor { margin-top: 14px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--code-bg); }
+.editor textarea { display: block; width: 100%; min-height: 150px; resize: vertical; border: 0; background: transparent; color: var(--ink-code); font-family: var(--mono); font-size: 14px; line-height: 1.55; padding: 12px 14px; tab-size: 4; white-space: pre; overflow-x: auto; }
+.editor textarea:focus { outline: none; }
+.editor:focus-within { border-color: var(--bamboo); }
+.keys { display: flex; gap: 4px; padding: 6px; border-top: 1px solid var(--line); overflow-x: auto; background: var(--panel); }
+.keys button { flex: 0 0 auto; min-width: 34px; height: 32px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); font-family: var(--mono); font-size: 14px; cursor: pointer; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; }
+.btn { height: 38px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); cursor: pointer; font-weight: 500; font-size: 14px; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--bamboo); border-color: var(--bamboo); color: var(--panel); font-weight: 600; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.spacer { flex: 1; }
+.kbd { font-size: 12px; color: var(--muted); }
+
+.feedback { margin-top: 12px; padding: 10px 12px; border-radius: 8px; font-size: 14px; }
+.feedback.ok { background: var(--ok-bg); color: var(--ok); font-weight: 600; }
+.feedback.bad { background: var(--bad-bg); color: var(--bad); }
+.feedback.info { background: var(--warn-bg); color: var(--warn); }
+.feedback pre { margin: 6px 0 0; white-space: pre-wrap; font-family: var(--mono); font-size: 13px; }
+
+.output { margin-top: 12px; }
+.outlabel { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-bottom: 6px; display: flex; gap: 8px; flex-wrap: wrap; }
+.outlabel span { text-transform: none; letter-spacing: 0; font-weight: 400; }
+.scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+pre.stdout, pre.repr { margin: 0; padding: 10px 12px; font-family: var(--mono); font-size: 13px; white-space: pre; color: var(--ink-code); }
+pre.stdout { border-bottom: 1px dashed var(--line); }
+table.frame { border-collapse: collapse; font-family: var(--mono); font-size: 12.5px; font-variant-numeric: tabular-nums; width: max-content; min-width: 100%; }
+table.frame th, table.frame td { padding: 5px 10px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+table.frame thead th { background: var(--code-bg); color: var(--muted); font-weight: 600; position: sticky; top: 0; }
+table.frame tbody th { color: var(--muted); font-weight: 600; text-align: left; }
+table.frame tbody tr:hover td { background: var(--bamboo-soft); }
+
+.reveal { margin-top: 12px; border-left: 3px solid var(--bamboo); padding: 6px 12px; background: var(--bamboo-soft); border-radius: 0 8px 8px 0; font-size: 14px; }
+.reveal pre { margin: 6px 0 0; font-family: var(--mono); font-size: 13px; white-space: pre; overflow-x: auto; }
+.pager { display: flex; justify-content: space-between; gap: 8px; margin-top: 16px; }
+
+.ds { display: grid; gap: 14px; }
+.ds h3 { font-family: var(--display); margin: 0; font-size: 18px; }
+.ds h3 code { color: var(--bamboo); font-size: 0.95em; }
+.ds p { margin: 4px 0 8px; color: var(--muted); font-size: 14px; }
+.cols { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.cols span { font-family: var(--mono); font-size: 12px; padding: 2px 8px; border-radius: 6px; background: var(--code-bg); border: 1px solid var(--line); }
+.cols span i { font-style: normal; color: var(--muted); }
+
+.boot { display: flex; gap: 12px; align-items: center; }
+.spin { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--bamboo); animation: spin .9s linear infinite; flex: 0 0 auto; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spin { animation: none; } .bar i { transition: none; } }
+
+@media (max-width: 860px) {
+  .grid { grid-template-columns: minmax(0, 1fr); }
+  nav.levels { position: static; flex-direction: row; overflow-x: auto; max-height: none; padding-bottom: 4px; gap: 6px; }
+  .lv { grid-template-columns: auto auto; width: auto; flex: 0 0 auto; border-color: var(--line); background: var(--panel); padding: 7px 10px; gap: 8px; }
+  .lv .t small { display: none; }
+  .lv .t { white-space: nowrap; font-size: 13px; }
+  .lv .c { display: none; }
+  .navsep { width: 1px; height: auto; margin: 4px 2px; flex: 0 0 auto; }
+  .mode { flex: 0 0 auto; border-color: var(--line); background: var(--panel); white-space: nowrap; }
+  .card { padding: 14px; }
+  .kbd { display: none; }
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Pandas <span>Dojo</span></h1>
+      <p class="sub">__COUNT__ drills from your first Series to multi-step challenges, on real Tokyo 2020 Olympics data. Real Python runs right in this page.</p>
+    </div>
+    <div class="stats">
+      <span class="pill" id="engine"><span class="dot" id="engineDot"></span><span id="engineText">Starting Python…</span></span>
+      <span class="pill"><b id="solvedCount">0</b> / <span id="totalCount">0</span> solved <span class="bar"><i id="solvedBar"></i></span></span>
+    </div>
+  </header>
+
+  <div class="grid">
+    <nav class="levels" id="levels" aria-label="Levels"></nav>
+    <main id="main"></main>
+  </div>
+</div>
+
+<script>
+const DATA = __DATA__;
+</script>
+<script>
+(() => {
+  const $ = (s, el = document) => el.querySelector(s);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('pdojo:' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+    set(k, v) { try { localStorage.setItem('pdojo:' + k, JSON.stringify(v)); } catch {} },
+  };
+  const EX = DATA.exercises;
+  const byId = Object.fromEntries(EX.map((e) => [e.id, e]));
+  let solved = new Set(store.get('solved', []));
+  let drafts = store.get('drafts', {});
+  let view = { kind: 'level', level: DATA.levels[0].id, ex: EX[0].id };
+
+  // ---------- Python worker ----------
+  let worker = null, ready = false, seq = 0;
+  const pending = new Map();
+  function setEngine(state, text) {
+    $('#engineDot').className = 'dot' + (state === 'ready' ? ' ready' : state === 'fail' ? ' fail' : '');
+    $('#engineText').textContent = text;
+  }
+  function startWorker() {
+    ready = false;
+    setEngine('load', 'Starting Python…');
+    try {
+      worker = new Worker('worker.js');
+    } catch (e) {
+      setEngine('fail', 'Python could not start');
+      return;
+    }
+    worker.onmessage = (ev) => {
+      const m = ev.data;
+      if (m.type === 'status') setEngine('load', m.text + '…');
+      else if (m.type === 'ready') { ready = true; setEngine('ready', 'pandas ' + m.version + ' ready'); refreshButtons(); }
+      else if (m.type === 'fatal') { setEngine('fail', 'Python failed to load'); showFatal(m.text); }
+      else if (m.type === 'result') { const p = pending.get(m.id); if (p) { pending.delete(m.id); clearTimeout(p.t); p.resolve(m.data); } }
+    };
+    worker.onerror = (e) => { setEngine('fail', 'Python failed to load'); showFatal(e.message || 'The Python worker stopped.'); };
+    worker.postMessage({ type: 'init', files: DATA.files, setup: DATA.setup, checker: DATA.checker, runtime: DATA.runtime });
+  }
+  function run(code, ex, mode) {
+    return new Promise((resolve) => {
+      const id = ++seq;
+      const t = setTimeout(() => {
+        pending.delete(id);
+        worker.terminate();
+        startWorker();
+        resolve({ error: 'Stopped after 20 seconds. Check for an endless loop, then run again. Python is restarting.', stdout: '', shown: null, check: null });
+      }, 20000);
+      pending.set(id, { resolve, t });
+      worker.postMessage({ type: 'run', id, code, mode, solution: ex ? ex.solution : '', opts: ex ? { ignore_index: !!ex.ignore_index, unordered: !!ex.unordered } : {} });
+    });
+  }
+  window.pgRun = (code, exId, mode) => run(code, byId[exId], mode);
+  window.pgReady = () => ready;
+
+  function showFatal(text) {
+    const box = $('#fatal');
+    if (box) { box.hidden = false; box.querySelector('pre').textContent = text; }
+  }
+
+  // ---------- Progress ----------
+  function saveSolved() { store.set('solved', [...solved]); renderStats(); renderNav(); }
+  function renderStats() {
+    $('#solvedCount').textContent = solved.size;
+    $('#totalCount').textContent = EX.length;
+    $('#solvedBar').style.width = (solved.size / EX.length * 100).toFixed(1) + '%';
+  }
+
+  // ---------- Navigation ----------
+  function renderNav() {
+    const nav = $('#levels');
+    nav.innerHTML = '';
+    DATA.levels.forEach((lv, i) => {
+      const list = EX.filter((e) => e.level === lv.id);
+      const done = list.filter((e) => solved.has(e.id)).length;
+      const b = document.createElement('button');
+      b.className = 'lv' + (done === list.length ? ' done' : '');
+      b.setAttribute('aria-current', String(view.kind !== 'sandbox' && view.kind !== 'data' && view.level === lv.id));
+      b.innerHTML = `<span class="n">${i + 1}</span><span class="t">${esc(lv.name)}<small>${esc(lv.tag)}</small></span><span class="c">${done}/${list.length}</span>`;
+      b.onclick = () => go(firstOpen(lv.id));
+      nav.appendChild(b);
+    });
+    const sep = document.createElement('div'); sep.className = 'navsep'; nav.appendChild(sep);
+    [['sandbox', 'Free sandbox'], ['data', 'Datasets']].forEach(([k, label]) => {
+      const b = document.createElement('button');
+      b.className = 'mode'; b.textContent = label;
+      b.setAttribute('aria-current', String(view.kind === k));
+      b.onclick = () => go(k);
+      nav.appendChild(b);
+    });
+    const cur = nav.querySelector('[aria-current="true"]');
+    if (cur && window.matchMedia('(max-width: 860px)').matches) cur.scrollIntoView({ block: 'nearest', inline: 'center' });
+  }
+  function firstOpen(levelId) {
+    const list = EX.filter((e) => e.level === levelId);
+    return (list.find((e) => !solved.has(e.id)) || list[0]).id;
+  }
+  function go(target) {
+    if (target === 'sandbox' || target === 'data') view = { kind: target };
+    else { const ex = byId[target]; if (!ex) return; view = { kind: 'level', level: ex.level, ex: ex.id }; }
+    try { history.replaceState(null, '', '#' + (view.kind === 'level' ? view.ex : view.kind)); } catch {}
+    render();
+  }
+
+  // ---------- Editor ----------
+  function editorHTML(id, value) {
+    const keys = ['⇥', '[', ']', '(', ')', "'", '.', '=', '==', ':', ',', '_', '>', '<', '&', '|', '#'];
+    return `<div class="editor"><textarea id="${id}" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Python code">${esc(value)}</textarea>
+      <div class="keys" aria-label="Quick keys">${keys.map((k) => `<button type="button" data-k="${esc(k)}">${esc(k)}</button>`).join('')}</div></div>`;
+  }
+  function insert(ta, text) {
+    const s = ta.selectionStart, e = ta.selectionEnd;
+    ta.setRangeText(text, s, e, 'end');
+    ta.dispatchEvent(new Event('input'));
+    ta.focus();
+  }
+  function wireEditor(ta, onRun, onCheck) {
+    const grow = () => { ta.style.height = 'auto'; ta.style.height = Math.max(150, ta.scrollHeight + 4) + 'px'; };
+    ta.addEventListener('input', grow); requestAnimationFrame(grow);
+    ta.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab' && !e.shiftKey) { e.preventDefault(); insert(ta, '    '); }
+      else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); (onCheck || onRun)(); }
+      else if (e.key === 'Enter' && e.shiftKey) { e.preventDefault(); onRun(); }
+      else if (e.key === 'Enter') {
+        const before = ta.value.slice(0, ta.selectionStart);
+        const line = before.split('\n').pop();
+        let indent = line.match(/^\s*/)[0];
+        if (/:\s*$/.test(line)) indent += '    ';
+        if (indent) { e.preventDefault(); insert(ta, '\n' + indent); }
+      }
+    });
+    ta.parentElement.querySelectorAll('.keys button').forEach((b) => {
+      b.addEventListener('mousedown', (e) => e.preventDefault());
+      b.addEventListener('click', () => insert(ta, b.dataset.k === '⇥' ? '    ' : b.dataset.k));
+    });
+  }
+
+  // ---------- Output ----------
+  function outputHTML(r, title) {
+    let h = '';
+    if (r.error) h += `<div class="feedback bad"><b>Error</b><pre>${esc(r.error)}</pre></div>`;
+    if (r.stdout || r.shown) {
+      h += `<div class="output"><div class="outlabel">${esc(title || 'Output')}${r.shown ? `<span>${esc(r.shown.label ? r.shown.label + ' · ' : '')}${esc(r.shown.meta)}</span>` : ''}</div><div class="scroll">`;
+      if (r.stdout) h += `<pre class="stdout">${esc(r.stdout)}</pre>`;
+      if (r.shown) h += r.shown.html ? r.shown.html : `<pre class="repr">${esc(r.shown.text)}</pre>`;
+      h += '</div></div>';
+    }
+    if (!h) h = '<div class="feedback info">Ran with no output. Put an expression on the last line, print(), or set result to see something.</div>';
+    return h;
+  }
+
+  let busy = false;
+  function refreshButtons() {
+    document.querySelectorAll('[data-needs-py]').forEach((b) => { b.disabled = !ready || busy; });
+    const w = $('#waiting'); if (w) w.hidden = ready;
+  }
+
+  // ---------- Views ----------
+  function render() {
+    renderNav();
+    const main = $('#main');
+    if (view.kind === 'sandbox') return renderSandbox(main);
+    if (view.kind === 'data') return renderData(main);
+    const lv = DATA.levels.find((l) => l.id === view.level);
+    const lvIndex = DATA.levels.indexOf(lv);
+    const list = EX.filter((e) => e.level === lv.id);
+    const ex = byId[view.ex];
+    const pos = list.indexOf(ex);
+    const gi = EX.indexOf(ex);
+    main.innerHTML = `
+      <section class="card lvhead">
+        <div class="eyebrow">Level ${lvIndex + 1} · ${esc(lv.tag)}</div>
+        <h2>${esc(lv.name)}</h2>
+        <p>${esc(lv.intro)}</p>
+        <details class="cheat"><summary>Cheat sheet</summary><div class="cheats">${lv.cheats.map((c) => `<code>${esc(c)}</code>`).join('')}</div></details>
+        <div class="exlist" role="list">${list.map((e, i) => `<button class="exbtn${solved.has(e.id) ? ' solved' : ''}" aria-current="${e.id === ex.id}" data-go="${e.id}" title="${esc(e.title)}">${i + 1}</button>`).join('')}</div>
+      </section>
+      <section class="card task">
+        <h3><span class="num">${lvIndex + 1}.${pos + 1}</span>${esc(ex.title)}${solved.has(ex.id) ? '<span class="badge">Solved</span>' : ''}</h3>
+        <p>${esc(ex.task)}</p>
+        <p class="note">Store your answer in <code>result</code>. Data ready to use: athletes, coaches, entries, medals, teams, sales, messy.</p>
+        ${editorHTML('code', drafts[ex.id] ?? ex.starter)}
+        <div class="actions">
+          <button class="btn primary" id="check" data-needs-py>Check answer</button>
+          <button class="btn" id="run" data-needs-py>Run</button>
+          <button class="btn" id="hint">Hint</button>
+          <button class="btn" id="expected" data-needs-py>Expected output</button>
+          <button class="btn" id="solution">Solution</button>
+          <button class="btn" id="reset">Reset</button>
+          <span class="spacer"></span><span class="kbd">Shift+Enter run · Ctrl+Enter check</span>
+        </div>
+        <div id="waiting" class="feedback info" ${ready ? 'hidden' : ''}><div class="boot"><span class="spin"></span>Python is loading (about 20 MB the first time). You can read and type meanwhile.</div></div>
+        <div id="fatal" class="feedback bad" hidden><b>Python could not start here.</b> The exercises still work as a reading list, and the same drills are in the notebook in the repo.<pre></pre></div>
+        <div id="extra"></div>
+        <div id="out"></div>
+        <div class="pager">
+          <button class="btn" id="prev" ${gi === 0 ? 'disabled' : ''}>← Previous</button>
+          <button class="btn" id="next" ${gi === EX.length - 1 ? 'disabled' : ''}>Next →</button>
+        </div>
+      </section>`;
+    main.querySelectorAll('[data-go]').forEach((b) => (b.onclick = () => go(b.dataset.go)));
+    const ta = $('#code');
+    ta.addEventListener('input', () => { drafts[ex.id] = ta.value; store.set('drafts', drafts); });
+    const out = $('#out'), extra = $('#extra');
+    async function doRun(mode) {
+      if (!ready || busy) return;
+      busy = true; refreshButtons();
+      out.innerHTML = '<div class="feedback info"><div class="boot"><span class="spin"></span>Running…</div></div>';
+      const r = await run(mode === 'expected' ? '' : ta.value, ex, mode);
+      busy = false; refreshButtons();
+      if (mode === 'expected') { out.innerHTML = outputHTML({ shown: r.shown, stdout: '', error: r.error }, 'Expected result'); return; }
+      let h = '';
+      if (r.check) {
+        if (r.check.ok) {
+          const first = !solved.has(ex.id);
+          solved.add(ex.id); saveSolved();
+          h += `<div class="feedback ok">${first ? 'Correct! Drill solved.' : 'Correct again.'}</div>`;
+          main.querySelector(`[data-go="${ex.id}"]`)?.classList.add('solved');
+        } else h += `<div class="feedback bad"><b>Not yet.</b> ${esc(r.check.msg)}</div>`;
+      }
+      out.innerHTML = h + outputHTML(r);
+    }
+    wireEditor(ta, () => doRun('run'), () => doRun('check'));
+    $('#run').onclick = () => doRun('run');
+    $('#check').onclick = () => doRun('check');
+    $('#expected').onclick = () => doRun('expected');
+    $('#hint').onclick = () => { extra.innerHTML = `<div class="reveal"><b>Hint.</b> ${esc(ex.hint)}</div>`; };
+    $('#solution').onclick = () => {
+      extra.innerHTML = `<div class="reveal"><b>One possible solution</b><pre>${esc(ex.solution)}</pre><div class="actions"><button class="btn" id="usesol">Copy into editor</button></div></div>`;
+      $('#usesol').onclick = () => { ta.value = ex.solution; ta.dispatchEvent(new Event('input')); };
+    };
+    $('#reset').onclick = () => { ta.value = ex.starter; delete drafts[ex.id]; store.set('drafts', drafts); ta.dispatchEvent(new Event('input')); out.innerHTML = ''; extra.innerHTML = ''; };
+    $('#prev').onclick = () => go(EX[gi - 1].id);
+    $('#next').onclick = () => go(EX[gi + 1].id);
+    refreshButtons();
+  }
+
+  function renderSandbox(main) {
+    const starter = store.get('sandbox', "# Anything goes. The last line's value is shown.\ntop = medals.nlargest(5, 'Gold')\ntop[['Team_Country', 'Gold', 'Total']]");
+    main.innerHTML = `<section class="card task">
+      <div class="eyebrow">Free play</div>
+      <h3>Sandbox</h3>
+      <p>Write any pandas code. Every dataset is preloaded, and each run starts from fresh copies.</p>
+      ${editorHTML('code', starter)}
+      <div class="actions"><button class="btn primary" id="run" data-needs-py>Run</button><span class="spacer"></span><span class="kbd">Shift+Enter run</span></div>
+      <div id="waiting" class="feedback info" ${ready ? 'hidden' : ''}><div class="boot"><span class="spin"></span>Python is loading…</div></div>
+      <div id="fatal" class="feedback bad" hidden><b>Python could not start here.</b><pre></pre></div>
+      <div id="out"></div></section>`;
+    const ta = $('#code');
+    ta.addEventListener('input', () => store.set('sandbox', ta.value));
+    const doRun = async () => {
+      if (!ready || busy) return;
+      busy = true; refreshButtons();
+      const r = await run(ta.value, null, 'run');
+      busy = false; refreshButtons();
+      $('#out').innerHTML = outputHTML(r);
+    };
+    wireEditor(ta, doRun);
+    $('#run').onclick = doRun;
+    refreshButtons();
+  }
+
+  function renderData(main) {
+    main.innerHTML = `<section class="card"><div class="eyebrow">Reference</div><h2 style="font-family:var(--display);margin:0 0 4px">Datasets</h2>
+      <p style="color:var(--muted);margin:0 0 14px">Preloaded in every drill under these names. Five come from your Tokyo 2020 files; sales and messy are practice tables.</p>
+      <div class="ds">${DATA.datasets.map((d) => `<div>
+        <h3><code>${esc(d.name)}</code> <span style="font-weight:500;color:var(--muted);font-size:14px">${d.rows.toLocaleString()} rows × ${d.cols.length} columns</span></h3>
+        <p>${esc(d.about)}</p>
+        <div class="cols">${d.cols.map((c) => `<span>${esc(c[0])} <i>${esc(c[1])}</i></span>`).join('')}</div>
+        <div class="scroll">${d.preview}</div></div>`).join('')}</div></section>`;
+  }
+
+  // ---------- Boot ----------
+  const h = location.hash.slice(1);
+  if (h === 'sandbox' || h === 'data') view = { kind: h };
+  else if (byId[h]) view = { kind: 'level', level: byId[h].level, ex: h };
+  else { const next = EX.find((e) => !solved.has(e.id)) || EX[0]; view = { kind: 'level', level: next.level, ex: next.id }; }
+  window.addEventListener('hashchange', () => { const k = location.hash.slice(1); if ((byId[k] && k !== view.ex) || ((k === 'sandbox' || k === 'data') && view.kind !== k)) go(k); });
+  renderStats();
+  render();
+  startWorker();
+})();
+</script>

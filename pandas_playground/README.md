@@ -1,6 +1,6 @@
 # Pandas Dojo
 
-73 pandas drills in 9 levels, from your first Series to multi-step challenges, using the Tokyo 2020 Olympics CSVs in this repo plus two small practice tables.
+87 drills in 10 levels, from your first Series to multi-step challenges, using the Tokyo 2020 Olympics CSVs in this repo plus two small practice tables.
 
 | Level | Topic | Drills |
 |---|---|---|
@@ -13,6 +13,7 @@
 | 7 | Reshaping: pivot_table, melt, pivot, crosstab, MultiIndex, explode | 7 |
 | 8 | Time series: .dt, resample, Grouper, rolling, pct_change | 7 |
 | 9 | Pro techniques: cut, qcut, rank, categoricals, pipe, np.select, challenges | 10 |
+| 10 | Data engineer: testable transforms, unit tests, schema and quality checks, dedup, upsert, incremental loads, chunked reads, retries, SQL with window functions, mini ETL | 14 |
 
 ## Two ways to practise
 
